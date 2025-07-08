@@ -14,7 +14,6 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -22,8 +21,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "newsletters",
+    "clients",
+    "mailing",
+    "attempt",
     "users",
+    "mail_messages",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "catalogs",
+    "mailings",
 ]
 
 MIDDLEWARE = [
@@ -31,6 +38,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -63,7 +71,7 @@ DATABASES = {
         "USER": config("USER"),
         "PASSWORD": config("PASSWORD"),
         "HOST": config("HOST"),
-        "PORT": '',
+        "PORT": "",
     }
 }
 
@@ -117,6 +125,11 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", False) == "True"
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", False) == "True"
 SERVER_EMAIL = os.getenv("SERVER_EMAIL")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+SITE_ID = 1
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 
 CACHE_ENABLED = True
 if CACHE_ENABLED:

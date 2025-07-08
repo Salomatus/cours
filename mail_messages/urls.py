@@ -1,0 +1,21 @@
+from django.urls import path
+
+from .views import (
+    MessageCreateView,
+    MessageDeleteView,
+    MessageDetailView,
+    MessageListView,
+    MessageUpdateView,
+)
+
+app_name = "mail_messages"
+
+urlpatterns = [
+    path("", MessageListView.as_view(), name="message_list"),
+    path("create/", MessageCreateView.as_view(), name="message_create"),
+    path(
+        "messages/<int:pk>/edit/", MessageUpdateView.as_view(), name="message_update"
+    ),
+    path("<int:pk>/delete/", MessageDeleteView.as_view(), name="message_delete"),
+    path("messages/<int:pk>/", MessageDetailView.as_view(), name="message_detail"),
+]
