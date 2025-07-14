@@ -1,18 +1,25 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
-    country = models.CharField(max_length=30, blank=True, null=True)
-    token = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(unique=True, verbose_name="Email")
+    avatar = models.ImageField(
+        upload_to="avatars/", null=True, blank=True, verbose_name="Аватар"
+    )
+    phone_number = models.CharField(
+        max_length=20, null=True, blank=True, verbose_name="Номер телефона"
+    )
+    country = models.CharField(
+        max_length=50, null=True, blank=True, verbose_name="Страна"
+    )
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = [
-        "username",
-    ]
+    REQUIRED_FIELDS = ["username"]
 
-    def __str__(self):
+    def _str_(self):
         return self.email
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"

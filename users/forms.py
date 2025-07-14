@@ -1,37 +1,25 @@
-from django import forms
-from django.contrib.auth.forms import (
-    AuthenticationForm,
-    PasswordResetForm,
-    SetPasswordForm,
-    UserCreationForm,
-)
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
-from .models import CustomUser
+from users.models import CustomUser
 
 
 class RegisterForm(UserCreationForm):
-    "Форма регистрации с email"
-
     class Meta:
         model = CustomUser
-        fields = ("email", "username", "password1", "password2")
+        fields = ("username", "email", "first_name", "last_name")
 
 
-class LoginForm(AuthenticationForm):
-    "Форма входа с email"
-
-    username = forms.EmailField(label="Email")
-
-
-class CustomPasswordResetForm(PasswordResetForm):
-
+class UserProfileEditForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ("email",)
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+            "avatar",
+            "phone_number",
+            "country",
+        )
 
-
-class ChangePasswordForm(SetPasswordForm):
-    def __init__(self, user, *args, **kwargs):
-        super().__init__(user, *args, **kwargs)
-        self.fields["new_password1"].widget.attrs.update({"class": "form-control"})
-        self.fields["new_password2"].widget.attrs.update({"class": "form-control"})
+        # Исключите поле для ввода пароля
+        exclude = ("password",)

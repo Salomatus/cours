@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Клиенты</h2>
+    <a href="{% url 'mailing:client_create' %}">Создать клиента</a>
+    <ul>
+        {% for client in clients %}
+            <li>
+                {{ client.full_name }} - {{ client.email }}
+                <a href="{% url 'mailing:client_update' client.pk %}">Изменить</a>
+                <a href="{% url 'mailing:client_delete' client.pk %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

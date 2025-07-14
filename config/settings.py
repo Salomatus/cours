@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from decouple import config
 
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,16 +21,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "clients",
-    "mailing",
-    "attempt",
     "users",
-    "mail_messages",
+    "mailings",
+    "django_apscheduler",
     "allauth",
     "allauth.account",
-    "allauth.socialaccount",
-    "catalogs",
-    "mailings",
+    "allauth.socialaccount", # Необходимые приложения из django-allauth
 ]
 
 MIDDLEWARE = [
@@ -129,7 +125,7 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 SITE_ID = 1
 
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 
 CACHE_ENABLED = True
 if CACHE_ENABLED:
@@ -140,4 +136,3 @@ if CACHE_ENABLED:
             "LOCATION": os.getenv("LOCATION"),
         }
     }
-

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load cache %}
+
+{% block content %}
+    <h2>Главная</h2>
+    {% cache 300 total_mailings_cache %}
+    <p>Всего рассылок: {{ total_mailings }}</p>
+    {% endcache %}
+    {% cache 300 active_mailings_cache %}
+    <p>Активных рассылок: {{ active_mailings }}</p>
+    {% endcache %}
+    {% cache 300 unique_clients_cache %}
+    <p>Уникальных получателей: {{ unique_clients }}</p>
+    {% endcache %}
+{% endblock %}
