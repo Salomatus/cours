@@ -1,12 +1,13 @@
+from django import forms
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
-from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-
-from users.forms import RegisterForm, UserProfileEditForm
+from django.shortcuts import redirect, render, get_object_or_404
+from users.forms import Profile, RegisterForm
 from users.models import CustomUser
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import ListView, View
 
 
 class RegisterView(CreateView):
@@ -44,23 +45,33 @@ class LogoutView(LogoutView):
     )  # Перенаправление на авторизацию после выхода
 
 
-@login_required
-def profile(request):
-    return render(request, "users/profile.html")
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ("email", "avatar", "phone", "country")
 
 
-@login_required
-def profile_edit(request):
-    if request.method == "POST":
-        form = UserProfileEditForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Профиль успешно обновлен.")
-            return redirect("users:profile")
-        else:
-            messages.error(
-                request, "Ошибка обновления профиля. Проверьте введенные данные."
-            )
-    else:
-        form = UserProfileEditForm(instance=request.user)
-    return render(request, "users/profile_edit.html", {"form": form})
+class UserListView(LoginRequiredMixin, ListView):
+    model = CustomUser
+    template_name = "mailings/user_list.html"
+    context_object_name = "users"
+
+
+class ToggleUserStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Контроллер для блокировки/разблокировки пользователей"""
+
+    def test_func(self):
+        # Проверяем права на блокировку пользователей
+        return self.request.user.has_perm("users.can_block_user")
+
+    def post(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        user.is_active = not user.is_active
+        user.save()
+
+        action = "разблокирован" if user.is_active else "заблокирован"
+        messages.success(request, f"Пользователь {user.email} успешно {action}")
+
+        return redirect("messaging:user_list")
+

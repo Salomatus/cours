@@ -1,19 +1,21 @@
 from pyexpat.errors import messages
 
 from django.contrib import messages
-from django.contrib.auth import get_user
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import models
-from django.db.models import Count
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import (LoginRequiredMixin,
+                                        PermissionRequiredMixin,
+                                        UserPassesTestMixin)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.decorators.cache import cache_page
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
 from django_apscheduler.models import DjangoJob
-from mailings.models import Client, Mailing, MailingAttempt, Message
+
+import users.models
+from mailings.models import Attempt, Client, Mailing, Message
 
 
 @cache_page(60 * 15)  # Кешируем на 15 минут
@@ -89,6 +91,14 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Сообщение успешно удалено.")
         return super().delete(request, *args, **kwargs)
+
+
+class MessageDetailView(LoginRequiredMixin, DetailView):
+    model = Message
+    template_name = "mailings/message_detail.html"
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
 
 class ClientListView(LoginRequiredMixin, ListView):
@@ -176,7 +186,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
 
         DjangoJob.objects.create(
             name=f"mailing_task_{mailing.pk}",
-            task="mailing.tasks.schedule_mailing_wrapper",  # Corrected task path
+            task="mailing.tasks.schedule_mailing_wrapper",
             args=[str(mailing.pk)],  # Передаем ID рассылки как строку
             next_run_time=start_time,
             end_datetime=end_time,
@@ -240,32 +250,87 @@ class StartMailingView(LoginRequiredMixin, View):
         return redirect("mailings:mailing_list")
 
 
+class MailingDetailView(LoginRequiredMixin, DetailView):
+    model = Mailing
+    template_name = "mailings/mailing_detail.html"
+    context_object_name = "mailing"
+
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.request.user)
+
+
+class UserMailingsView(PermissionRequiredMixin, ListView):
+    permission_required = "mailings.can_view_all_mailings"
+    template_name = "mailings/user_mailings.html"
+    context_object_name = "mailings"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.target_user = get_object_or_404(users.models.CustomUser, pk=self.kwargs["user_id"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.target_user).select_related("message")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["target_user"] = self.target_user
+        return context
+
+
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    permission_required = "users.view_user"
+    model = users.models.CustomUser
+    template_name = "mailings/user_list.html"
+    context_object_name = "users"
+
+    def test_func(self):
+        return self.request.user.has_perm("users.can_view_all")
+
+    def get_queryset(self):
+        return users.models.CustomUser.objects.all()
+
+
+class ToggleUserStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Контроллер для блокировки/разблокировки пользователей"""
+
+    def test_func(self):
+        return self.request.user.has_perm("users.can_block_user")
+
+    def post(self, request, pk):
+        user = get_object_or_404(users.models.CustomUser, pk=pk)
+        user.is_blocked = not user.is_blocked
+        user.save()
+
+        action = "разблокирован" if not user.is_blocked else "заблокирован"
+        messages.success(request, f"Пользователь {user.email} успешно {action}")
+
+        return redirect("mailings:user_list")
+
+
+class AttemptListView(LoginRequiredMixin, ListView):
+    model = Attempt
+    template_name = "attempts/attempt_list.html"
+    context_object_name = "attempts"
+
+    def get_queryset(self):
+        return Attempt.objects.filter(mailing__owner=self.request.user)
+
+
 @login_required
-def mailing_reports(request):
-    """
-    Отображает отчеты о попытках рассылки для текущего пользователя.
-    """
+@permission_required("mailings.change_mailing")
+def disable_mailing(request, mailing_id):
+    mailing = get_object_or_404(Mailing, pk=mailing_id)
+    mailing.is_active = False
+    mailing.status = Mailing.COMPLETED
+    mailing.save()
+    return redirect("mailings:mailing_list")
 
-    # Fetch mailings owned by the current user
-    mailings = Mailing.objects.filter(owner=request.user)
 
-    # Fetch attempt statistics for those mailings
-    mailing_attempts = (
-        MailingAttempt.objects.filter(mailing__in=mailings)
-        .values("mailing")
-        .annotate(
-            total_attempts=Count("mailing"),
-            successful_attempts=Count("mailing", filter=models.Q(status="success")),
-            failed_attempts=Count("mailing", filter=models.Q(status="failure")),
-        )
-    )
+class DisableMailingView(View):
+    def get(self, request, pk):
+        mailing = get_object_or_404(Mailing, pk=pk)
+        mailing.is_active = False
+        mailing.save()
+        return redirect("mailings:mailing_list")
 
-    # Подготовьте словарь для учета количества попыток для каждой рассылки
-    mailing_stats = {attempt["mailing"]: attempt for attempt in mailing_attempts}
 
-    # Передача данных в шаблон
-    context = {
-        "mailings": mailings,
-        "mailing_stats": mailing_stats,
-    }
-    return render(request, "mailings/mailing_reports.html", context)

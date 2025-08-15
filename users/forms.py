@@ -1,25 +1,30 @@
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-from users.models import CustomUser
+from users.models import CustomUser, Profile
 
 
 class RegisterForm(UserCreationForm):
+    email = forms.EmailField(label="Email")
+    password1 = forms.CharField(label="Пароль", widget=forms.PasswordInput)
+    password2 = forms.CharField(
+        label="Подтверждение пароля", widget=forms.PasswordInput
+    )
+
     class Meta:
         model = CustomUser
-        fields = ("username", "email", "first_name", "last_name")
+        fields = ("email", "password1", "password2")
 
 
-class UserProfileEditForm(UserChangeForm):
+class LoginForm(AuthenticationForm):
+    username = forms.EmailField(label="Email")
+    password = forms.CharField(label="Пароль", widget=forms.PasswordInput)
+
+
+class ProfileForm(forms.ModelForm):
     class Meta:
-        model = CustomUser
-        fields = (
-            "first_name",
-            "last_name",
-            "email",
-            "avatar",
-            "phone_number",
-            "country",
-        )
+        model = Profile
+        fields = ("email", "avatar", "phone", "country")
 
-        # Исключите поле для ввода пароля
-        exclude = ("password",)
+
+
