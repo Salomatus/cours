@@ -74,3 +74,4 @@ class ToggleUserStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
         messages.success(request, f"Пользователь {user.email} успешно {action}")
 
         return redirect("messaging:user_list")
+
