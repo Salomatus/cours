@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 
 
-
 class Command(BaseCommand):
     help = "Создание группы Менеджеры и назначение прав"
 

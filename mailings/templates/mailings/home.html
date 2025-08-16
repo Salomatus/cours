@@ -1,15 +1,36 @@
-{% extends 'mailings/base.html' %}
-{% load cache %}
+{% extends 'base.html' %}
 
 {% block content %}
-    <h2>Главная</h2>
-    {% cache 300 total_mailings_cache %}
-    <p>Всего рассылок: {{ total_mailings }}</p>
-    {% endcache %}
-    {% cache 300 active_mailings_cache %}
-    <p>Активных рассылок: {{ active_mailings }}</p>
-    {% endcache %}
-    {% cache 300 unique_clients_cache %}
-    <p>Уникальных получателей: {{ unique_clients }}</p>
-    {% endcache %}
+<div class="container mt-5">
+    <h1 class="mb-4">Статистика рассылок</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Всего рассылок</h5>
+                    <p class="display-4">{{ total_mailings }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Активные рассылки</h5>
+                    <p class="display-4">{{ active_mailings }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Уникальных клиентов</h5>
+                    <p class="display-4">{{ unique_clients }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
