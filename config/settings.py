@@ -12,7 +12,7 @@ load_dotenv(override=True)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 DEBUG = True
@@ -70,10 +70,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": config("NAME"),
-        "USER": config("USER"),
-        "PASSWORD": config("PASSWORD"),
-        "HOST": config("HOST"),
+        "NAME": os.getenv("NAME"),
+        "USER": os.getenv("USER"),
+        "PASSWORD": os.getenv("PASSWORD"),
+        "HOST": os.getenv("HOST"),
         "PORT": "",
     }
 }
@@ -120,13 +120,16 @@ LOGOUT_REDIRECT_URL = "/"
 
 LOGIN_URL = "users:login"
 
-EMAIL_BACKEND = os.getenv
-EMAIL_HOST = os.getenv
-EMAIL_PORT = os.getenv
-EMAIL_USE_TLS = os.getenv
-EMAIL_USE_SSL = os.getenv
-EMAIL_HOST_USER = os.getenv
-EMAIL_HOST_PASSWORD = os.getenv
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", False) == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", False) == "True"
+SERVER_EMAIL = os.getenv("SERVER_EMAIL")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+SITE_ID = 1
 
 
 AUTH_USER_MODEL = "users.CustomUser"
