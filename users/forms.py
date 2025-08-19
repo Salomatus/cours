@@ -13,7 +13,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ("email", "password1", "password2")
+        form_class = ("email", "password1", "password2")
 
 
 class LoginForm(AuthenticationForm):
@@ -24,7 +24,7 @@ class LoginForm(AuthenticationForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ("email", "avatar", "phone", "country")
+        form_class = ("email", "avatar", "phone", "country")
 
 
 

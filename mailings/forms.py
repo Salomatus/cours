@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import BooleanField
-
 from mailings.models import Client, Mailing, Message
 
 
@@ -12,19 +11,18 @@ class MailingForm(forms.ModelForm):
             "clients",
             "start_time",
             "end_time",
-            "status",
             "owner",
         ]
         widgets = {
-            "start_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "end_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
 
 class ClientsForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ["email", "full_name", "comment"]
+        form_class = ["email", "full_name", "comment"]
         widgets = {
             "comment": forms.Textarea(
                 attrs={"rows": 4, "placeholder": "Введите дополнительную информацию"}
@@ -58,7 +56,7 @@ class ClientsForm(forms.ModelForm):
 class MessageForm(forms.ModelForm):
     class Meta:
         model = Message
-        fields = ["messages_subject", "messages_body"]
+        form_class = ["messages_subject", "messages_body"]
 
 
 class StyleFormMixin:

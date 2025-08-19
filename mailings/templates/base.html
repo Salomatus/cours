@@ -39,9 +39,13 @@
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'users:profile' %}">Профиль</a>
-                        </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'users:logout' %}">Выйти</a>
+                            <form action="{% url 'users:logout' %}" method="POST" class="nav-link">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item">
+                                Выход
+                                </button>
+                            </form>
                         </li>
                     {% else %}
                         <li class="nav-item">

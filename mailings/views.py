@@ -14,6 +14,7 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
 from django_apscheduler.models import DjangoJob
 
+import mailings.forms
 import users.models
 from mailings.models import Attempt, Client, Mailing, Message
 
@@ -109,11 +110,16 @@ class ClientListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Client.objects.filter(owner=self.request.user)
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['clients'].queryset = form.fields['clients'].queryset.filter(owner=self.request.user)
+        return form
+
 
 class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     template_name = "mailings/client_form.html"
-    fields = ["email", "full_name", "comment"]
+    form_class = mailings.forms.ClientsForm["email", "full_name", "comment"]
     success_url = reverse_lazy("mailings:client_list")
 
     def form_valid(self, form):
