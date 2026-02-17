@@ -1,8 +1,0 @@
-{% extends 'base.html' %}
-{% block content %}
-    <h2>Профиль</h2>
-    <p>Имя: {{ user.first_name }}</p>
-    <p>Фамилия: {{ user.last_name }}</p>
-    <p>Email: {{ user.email }}</p>
-    <a href="{% url 'users:profile_edit' %}">Редактировать профиль</a>
-{% endblock %}

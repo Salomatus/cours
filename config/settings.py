@@ -1,12 +1,17 @@
 import os
 from pathlib import Path
 
-from decouple import config
+from django.conf.global_settings import AUTH_USER_MODEL
+from dotenv import load_dotenv
+
+
+load_dotenv(override=True)
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 DEBUG = True
@@ -21,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_filters",
     "users",
     "mailings",
     "django_apscheduler",
@@ -63,10 +69,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": config("NAME"),
-        "USER": config("USER"),
-        "PASSWORD": config("PASSWORD"),
-        "HOST": config("HOST"),
+        "NAME": os.getenv("NAME"),
+        "USER": os.getenv("USER"),
+        "PASSWORD": os.getenv("PASSWORD"),
+        "HOST": os.getenv("HOST"),
         "PORT": "",
     }
 }
@@ -111,7 +117,7 @@ LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
 
-AUTH_USER_MODEL = "users.CustomUser"
+LOGIN_URL = "users:login"
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
@@ -123,6 +129,10 @@ SERVER_EMAIL = os.getenv("SERVER_EMAIL")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 SITE_ID = 1
+
+
+AUTH_USER_MODEL = "users.CustomUser"
+
 
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
